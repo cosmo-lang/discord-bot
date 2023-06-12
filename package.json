@@ -1,0 +1,27 @@
+{
+  "name": "cosmo-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cosmo-lang/discord-bot.git"
+  },
+  "keywords": [
+    "cosmo",
+    "lang",
+    "discord",
+    "bot",
+    "test",
+    "demo"
+  ],
+  "author": "R-unic",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cosmo-lang/discord-bot/issues"
+  },
+  "homepage": "https://github.com/cosmo-lang/discord-bot#readme"
+}
