@@ -39,13 +39,13 @@ client.on("messageCreate", async message => {
   if (!command) return;
 
   if (command.toLowerCase() == "$help") {
-    const embed = new EmbedBuilder()
-      .setTitle("Help Menu")
-      .setDescription("This bot has exactly one command. That command is `$cosmo`. `$cosmo` is to be executed with a code block. The given code block will then be interpreted by Cosmo. For example:\n\n$cosmo ```\nmy code here\n```")
-      .setColor("Blue")
-      .setTimestamp();
-
-    message.reply({ embeds: [ embed ] });
+    message.reply({ embeds: [
+      new EmbedBuilder()
+        .setTitle("Help Menu")
+        .setDescription("This bot has exactly one command. That command is `$cosmo`. `$cosmo` is to be executed with a code block. The given code block will then be interpreted by Cosmo. For example:\n\n$cosmo ```\nmy code here\n```")
+        .setColor("Blue")
+        .setTimestamp()
+    ] });
   } else if (command.toLowerCase() == "$cosmo") {
     const codeblock = args.join(" ");
     if (!codeblock.startsWith("```") || !codeblock.endsWith("```"))
@@ -59,23 +59,23 @@ client.on("messageCreate", async message => {
     if (body.includes("exec") && body.includes("from \"system\""))
       return displayError(message, "Cannot execute", "System->exec is not allowed for security purposes");
 
-    const loadingEmbed = new EmbedBuilder()
-      .setTitle("Loading...")
-      .setColor("Yellow")
-
-    const reply = await message.reply({ embeds: [ loadingEmbed ] });
+    const reply = await message.reply({ embeds: [
+      new EmbedBuilder()
+        .setTitle("Loading...")
+        .setColor("Yellow")
+    ] });
 
     // TODO: add process timeout
     fs.writeFileSync("main.⭐", body);
     exec("cosmo main.⭐", (ex, out) => {
       const ansiEscapeRegex = /\x1B\[[0-9;]*[mG]/g;
-      const embed = new EmbedBuilder()
-        .setTitle("Output")
-        .setDescription(`\`\`\`${ex?.message ?? out.replace(ansiEscapeRegex, "")}\`\`\``)
-        .setColor("Green")
-        .setTimestamp();
-
-      reply.edit({ embeds: [ embed ] });
+      reply.edit({ embeds: [
+        new EmbedBuilder()
+          .setTitle("Output")
+          .setDescription(`\`\`\`${ex?.message ?? out.replace(ansiEscapeRegex, "")}\`\`\``)
+          .setColor("Green")
+          .setTimestamp()
+      ] });
     });
   }
 });
