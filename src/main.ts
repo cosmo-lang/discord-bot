@@ -1,4 +1,4 @@
-import { Client, IntentsBitField } from "discord.js";
+import { Client, EmbedBuilder, IntentsBitField, Message } from "discord.js";
 import { configDotenv as configEnv } from "dotenv";
 import { exec } from "child_process";
 import * as fs from "fs";
@@ -12,8 +12,18 @@ const client = new Client({
   ]
 });
 
+function displayError(message: Message, title: string, description: string): void {
+  const embed = new EmbedBuilder()
+    .setTitle("Error: " + title)
+    .setDescription(description)
+    .setColor("Red")
+    .setTimestamp();
+
+  message.reply({ embeds: [embed] });
+}
+
 client.on("ready", () => console.log("Application online!"));
-client.on("error", console.error);
+client.on("error", console.warn);
 
 client.on("messageCreate", message => {
   const args = message.content.split(" ");
@@ -21,24 +31,27 @@ client.on("messageCreate", message => {
   if (command?.toLowerCase() != "$cosmo") return;
 
   const codeblock = args.join(" ");
-  if (!codeblock.startsWith("```") || !codeblock.endsWith("```")) {
-    message.reply("Cannot execute: Invalid code block");
-    return;
-  }
+  if (!codeblock.startsWith("```") || !codeblock.endsWith("```"))
+    return displayError(message, "Cannot execute", "Invalid code block");
 
   const bodyLines = codeblock.split("\n");
   bodyLines.shift();
   bodyLines.pop();
 
   const body = bodyLines.join("\n");
-  if (body.includes("exec") && body.includes("from \"system\"")) {
-    message.reply("Cannot execute: System->exec is not allowed for security purposes");
-    return;
-  }
+  if (body.includes("exec") && body.includes("from \"system\""))
+    return displayError(message, "Cannot execute", "System->exec is not allowed for security purposes");
 
   fs.writeFileSync("main.⭐", body)
-  const proc = exec("cosmo main.⭐");
-  message.reply(`Output: ${proc.stderr?.read() ?? proc.stdout?.read()}`)
+  exec("cosmo main.⭐", (ex, out) => {
+    const embed = new EmbedBuilder()
+      .setTitle("Output")
+      .setDescription(`\`\`\`${ex?.message ?? out}\`\`\``)
+      .setColor("Green")
+      .setTimestamp();
+
+    message.reply({ embeds: [embed] });
+  });
 });
 
 client.login(process.env.TOKEN);
