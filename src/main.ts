@@ -42,6 +42,7 @@ client.on("messageCreate", message => {
   if (body.includes("exec") && body.includes("from \"system\""))
     return displayError(message, "Cannot execute", "System->exec is not allowed for security purposes");
 
+  // TODO: add process timeout
   fs.writeFileSync("main.⭐", body);
   exec("cosmo main.⭐", (ex, out) => {
     const ansiEscapeRegex = /\x1B\[[0-9;]*[mG]/g;
