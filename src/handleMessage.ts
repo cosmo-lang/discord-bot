@@ -25,6 +25,11 @@ const wrapCodeblock = (text: string): string => {
   return `\`\`\`${text}\`\`\``;
 }
 
+const DISALLOWED_IMPORTS = new Map<string, string[] | true>([
+  ["system", ["exec"]],
+  ["file", true]
+]);
+
 export async function handleMessage(message: Message): Promise<void> {
   const args = message.content.split(" ");
   const command = args.shift();
@@ -50,8 +55,16 @@ export async function handleMessage(message: Message): Promise<void> {
     bodyLines.pop();
 
     const body = bodyLines.join("\n");
-    if (body.includes("exec") && body.includes("from \"system\""))
-      return displayError(message, "Cannot execute", "System->exec is not allowed for security purposes.");
+    for (const [libName, disallowed] of DISALLOWED_IMPORTS) {
+      if (body.includes(`from "${libName}"`)) {
+        const title = "Cannot execute, disallowed import";
+        if (disallowed === true)
+          return displayError(message, title, `The "${libName}" module is not allowed for security purposes.`);
+        for (const member of disallowed)
+          if (body.includes(member))
+            return displayError(message, title, `The import "${member}" from "${libName}" is not allowed for security purposes.`)
+      }
+    }
 
     if (isWhitespace(body))
       return displayError(message, "Cannot execute", "Code block is empty.");
