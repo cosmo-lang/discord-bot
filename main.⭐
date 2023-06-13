@@ -1,1 +1,2 @@
-puts("Hello from Cosmo!")
+use sin from "math"
+puts(sin(6))

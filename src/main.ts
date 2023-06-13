@@ -19,7 +19,7 @@ function displayError(message: Message, title: string, description: string): voi
     .setColor("Red")
     .setTimestamp();
 
-  message.reply({ embeds: [embed] });
+  message.reply({ embeds: [ embed ] });
 }
 
 client.on("ready", () => console.log("Application online!"));
@@ -42,15 +42,16 @@ client.on("messageCreate", message => {
   if (body.includes("exec") && body.includes("from \"system\""))
     return displayError(message, "Cannot execute", "System->exec is not allowed for security purposes");
 
-  fs.writeFileSync("main.⭐", body)
+  fs.writeFileSync("main.⭐", body);
   exec("cosmo main.⭐", (ex, out) => {
+    const ansiEscapeRegex = /\x1B\[[0-9;]*[mG]/g;
     const embed = new EmbedBuilder()
       .setTitle("Output")
-      .setDescription(`\`\`\`${ex?.message ?? out}\`\`\``)
+      .setDescription(`\`\`\`${ex?.message ?? out.replace(ansiEscapeRegex, "")}\`\`\``)
       .setColor("Green")
       .setTimestamp();
 
-    message.reply({ embeds: [embed] });
+    message.reply({ embeds: [ embed ] });
   });
 });
 
