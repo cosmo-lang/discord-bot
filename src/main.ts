@@ -1,4 +1,4 @@
-import { Client, EmbedBuilder, IntentsBitField, Message } from "discord.js";
+import { ActivityType, Client, EmbedBuilder, IntentsBitField, Message } from "discord.js";
 import { configDotenv as configEnv } from "dotenv";
 import { exec } from "child_process";
 import * as fs from "fs";
@@ -22,8 +22,16 @@ function displayError(message: Message, title: string, description: string): voi
   message.reply({ embeds: [ embed ] });
 }
 
-client.on("ready", () => console.log("Application online!"));
 client.on("error", console.warn);
+client.on("ready", () => {
+  console.log("Application online!");
+  exec("cosmo -v", (ex, out) =>
+    client.user?.setActivity({
+      name: `$help | ${out}`,
+      type: ActivityType.Watching
+    })
+  );
+});
 
 client.on("messageCreate", message => {
   const args = message.content.split(" ");
