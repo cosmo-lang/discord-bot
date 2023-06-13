@@ -2,7 +2,8 @@ import { EmbedBuilder, Message } from "discord.js";
 import { executeWithTimeout } from "./executeWithTimeout";
 import * as fs from "fs";
 
-function displayError(message: Message, title: string, description: string): void {
+function displayError(message: Message, title: string, description: string, replyMessage?: Message): void {
+  replyMessage?.delete();
   message.reply({ embeds: [
     new EmbedBuilder()
       .setTitle("Error: " + title)
@@ -12,17 +13,24 @@ function displayError(message: Message, title: string, description: string): voi
   ] });
 }
 
-// removes ANSI escape sequences and wraps with ```
-const wrapCodeblock = (text: string): string =>
-  `\`\`\`${text.replace(/\x1B\[[0-9;]*[mG]/g, "")}\`\`\``
+const isWhitespace = (content: string): boolean =>
+  /^\s*$/.test(content)
 
-// TODO: handle empty code as well as empty output
+// Removes ANSI escape sequences and wraps with ```
+const wrapCodeblock = (text: string): string => {
+  text = text.replace(/\x1B\[[0-9;]*[mG]/g, "");
+  if (isWhitespace(text))
+    text = "(empty)";
+
+  return `\`\`\`${text}\`\`\``;
+}
+
 export async function handleMessage(message: Message): Promise<void> {
   const args = message.content.split(" ");
   const command = args.shift();
   if (!command) return;
 
-  if (command.toLowerCase() == "$help") {
+  if (command.toLowerCase() === "$help") {
     message.reply({
       embeds: [
         new EmbedBuilder()
@@ -32,7 +40,7 @@ export async function handleMessage(message: Message): Promise<void> {
           .setTimestamp()
       ]
     });
-  } else if (command.toLowerCase() == "$cosmo") {
+  } else if (command.toLowerCase() === "$cosmo") {
     const codeblock = args.join(" ");
     if (!codeblock.startsWith("```") || !codeblock.endsWith("```"))
       return displayError(message, "Cannot execute", "Invalid code block.");
@@ -45,6 +53,9 @@ export async function handleMessage(message: Message): Promise<void> {
     if (body.includes("exec") && body.includes("from \"system\""))
       return displayError(message, "Cannot execute", "System->exec is not allowed for security purposes.");
 
+    if (isWhitespace(body))
+      return displayError(message, "Cannot execute", "Code block is empty.");
+
     const reply = await message.reply({
       embeds: [
         new EmbedBuilder()
@@ -53,8 +64,8 @@ export async function handleMessage(message: Message): Promise<void> {
       ]
     });
 
-    fs.writeFileSync("main.⭐", body);
     const timeout = 20000;
+    fs.writeFileSync("main.⭐", body);
     executeWithTimeout("cosmo main.⭐", timeout)
       .then(out => {
         reply.edit({
@@ -68,7 +79,7 @@ export async function handleMessage(message: Message): Promise<void> {
         });
       })
       .catch(ex => {
-        if (typeof ex == "string")
+        if (typeof ex === "string")
           reply.edit({
             embeds: [
               new EmbedBuilder()
@@ -78,10 +89,8 @@ export async function handleMessage(message: Message): Promise<void> {
                 .setTimestamp()
             ]
           });
-
-
         else
-          return displayError(message, "Timeout", `Execution timed out because it exceeded execution time of ${timeout / 1000} seconds.`);
+          return displayError(message, "Timeout", `Execution timed out because it exceeded execution time of ${timeout / 1000} seconds.`, reply);
       });
   }
 }
