@@ -28,32 +28,40 @@ client.on("error", console.warn);
 client.on("messageCreate", message => {
   const args = message.content.split(" ");
   const command = args.shift();
-  if (command?.toLowerCase() != "$cosmo") return;
-
-  const codeblock = args.join(" ");
-  if (!codeblock.startsWith("```") || !codeblock.endsWith("```"))
-    return displayError(message, "Cannot execute", "Invalid code block");
-
-  const bodyLines = codeblock.split("\n");
-  bodyLines.shift();
-  bodyLines.pop();
-
-  const body = bodyLines.join("\n");
-  if (body.includes("exec") && body.includes("from \"system\""))
-    return displayError(message, "Cannot execute", "System->exec is not allowed for security purposes");
-
-  // TODO: add process timeout
-  fs.writeFileSync("main.⭐", body);
-  exec("cosmo main.⭐", (ex, out) => {
-    const ansiEscapeRegex = /\x1B\[[0-9;]*[mG]/g;
+  if (command?.toLowerCase() == "$help") {
     const embed = new EmbedBuilder()
-      .setTitle("Output")
-      .setDescription(`\`\`\`${ex?.message ?? out.replace(ansiEscapeRegex, "")}\`\`\``)
-      .setColor("Green")
+      .setTitle("Help Menu")
+      .setDescription("This bot has exactly one command. That command is `$cosmo`. `$cosmo` is to be executed with a code block. The given code block will then be interpreted by Cosmo. For example:\n\n$cosmo ```\nmy code here\n```")
+      .setColor("Blue")
       .setTimestamp();
 
     message.reply({ embeds: [ embed ] });
-  });
+  } else if (command?.toLowerCase() == "$cosmo") {
+    const codeblock = args.join(" ");
+    if (!codeblock.startsWith("```") || !codeblock.endsWith("```"))
+      return displayError(message, "Cannot execute", "Invalid code block");
+
+    const bodyLines = codeblock.split("\n");
+    bodyLines.shift();
+    bodyLines.pop();
+
+    const body = bodyLines.join("\n");
+    if (body.includes("exec") && body.includes("from \"system\""))
+      return displayError(message, "Cannot execute", "System->exec is not allowed for security purposes");
+
+    // TODO: add process timeout
+    fs.writeFileSync("main.⭐", body);
+    exec("cosmo main.⭐", (ex, out) => {
+      const ansiEscapeRegex = /\x1B\[[0-9;]*[mG]/g;
+      const embed = new EmbedBuilder()
+        .setTitle("Output")
+        .setDescription(`\`\`\`${ex?.message ?? out.replace(ansiEscapeRegex, "")}\`\`\``)
+        .setColor("Green")
+        .setTimestamp();
+
+      message.reply({ embeds: [ embed ] });
+    });
+  }
 });
 
 client.login(process.env.TOKEN);
