@@ -31,9 +31,14 @@ client.on("messageCreate", message => {
   bodyLines.pop();
 
   const body = bodyLines.join("\n");
+  if (body.includes("exec") && body.includes("from \"system\"")) {
+    message.reply("Cannot execute: System->exec is not allowed for security purposes");
+    return;
+  }
+
   fs.writeFileSync("main.⭐", body)
   const proc = exec("cosmo main.⭐");
-  message.reply(`Output: ${proc.stderr?.read() || proc.stdout?.read()}`)
+  message.reply(`Output: ${proc.stderr?.read() ?? proc.stdout?.read()}`)
 });
 
 client.login(process.env.TOKEN);
