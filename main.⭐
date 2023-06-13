@@ -1,2 +1,1 @@
-use sin from "math"
-puts(sin(6))
+puts("hello world!")

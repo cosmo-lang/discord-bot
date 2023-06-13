@@ -33,10 +33,12 @@ client.on("ready", () => {
   );
 });
 
-client.on("messageCreate", message => {
+client.on("messageCreate", async message => {
   const args = message.content.split(" ");
   const command = args.shift();
-  if (command?.toLowerCase() == "$help") {
+  if (!command) return;
+
+  if (command.toLowerCase() == "$help") {
     const embed = new EmbedBuilder()
       .setTitle("Help Menu")
       .setDescription("This bot has exactly one command. That command is `$cosmo`. `$cosmo` is to be executed with a code block. The given code block will then be interpreted by Cosmo. For example:\n\n$cosmo ```\nmy code here\n```")
@@ -44,7 +46,7 @@ client.on("messageCreate", message => {
       .setTimestamp();
 
     message.reply({ embeds: [ embed ] });
-  } else if (command?.toLowerCase() == "$cosmo") {
+  } else if (command.toLowerCase() == "$cosmo") {
     const codeblock = args.join(" ");
     if (!codeblock.startsWith("```") || !codeblock.endsWith("```"))
       return displayError(message, "Cannot execute", "Invalid code block");
@@ -57,6 +59,12 @@ client.on("messageCreate", message => {
     if (body.includes("exec") && body.includes("from \"system\""))
       return displayError(message, "Cannot execute", "System->exec is not allowed for security purposes");
 
+    const loadingEmbed = new EmbedBuilder()
+      .setTitle("Loading...")
+      .setColor("Yellow")
+
+    const reply = await message.reply({ embeds: [ loadingEmbed ] });
+
     // TODO: add process timeout
     fs.writeFileSync("main.⭐", body);
     exec("cosmo main.⭐", (ex, out) => {
@@ -67,7 +75,7 @@ client.on("messageCreate", message => {
         .setColor("Green")
         .setTimestamp();
 
-      message.reply({ embeds: [ embed ] });
+      reply.edit({ embeds: [ embed ] });
     });
   }
 });
