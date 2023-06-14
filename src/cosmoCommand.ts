@@ -4,6 +4,7 @@ import * as fs from "fs";
 
 export const DISALLOWED_IMPORTS = new Map<string, string[] | true>([
   ["system", ["exec"]],
+  ["http", ["Server"]],
   ["file", true]
 ]);
 
