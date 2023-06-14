@@ -31,7 +31,7 @@ function displayOutput(type: "Error" | "Success", reply: Message, content: strin
     embeds: [
       new EmbedBuilder()
         .setTitle(`Output (${type})`)
-        .setDescription(`\`\`\`${strippedContent}\`\`\``)
+        .setDescription(`\`\`\`\n${strippedContent}\`\`\``)
         .setColor(type === "Error" ? "Red" : "Green")
         .setTimestamp()
     ]

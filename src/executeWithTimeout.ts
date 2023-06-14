@@ -10,12 +10,11 @@ export function executeWithTimeout(command: string, timeout: number): Promise<st
         .trim()
         .split("\n");
 
-      const message = lines.join("\n");
       if (failed) {
         lines.shift();
-        reject(message);
+        reject(lines.join("\n"));
       } else
-        resolve(message);
+        resolve(lines.join("\n"));
     });
 
     const handle = setTimeout(() => {
