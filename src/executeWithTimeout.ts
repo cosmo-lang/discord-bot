@@ -11,7 +11,8 @@ export function executeWithTimeout(command: string, timeout: number): Promise<st
         .split("\n");
 
       if (failed) {
-        lines.shift();
+        if (lines.length > 1)
+          lines.shift();
         reject(lines.join("\n"));
       } else
         resolve(lines.join("\n"));
