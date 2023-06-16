@@ -2,7 +2,7 @@ import { EmbedBuilder, Message } from "discord.js";
 import { executeWithTimeout } from "./executeWithTimeout";
 import * as fs from "fs";
 
-export const DISALLOWED_IMPORTS = new Map<string, string[] | true>([
+const DISALLOWED_IMPORTS = new Map<string, string[] | true>([
   ["system", ["exec"]],
   ["http", ["Server"]],
   ["file", true]
